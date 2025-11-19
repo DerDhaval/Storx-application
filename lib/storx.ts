@@ -13,16 +13,13 @@ export interface StorXFile {
   mimeType?: string;
   url?: string;
   key?: string; // S3 object key
+  bucket?: string; // S3 bucket name
 }
 
 export interface S3Credentials {
   accessKeyId: string;
   secretAccessKey: string;
-  sessionToken?: string;
-  bucket?: string; // Optional - might not be in StorX response
-  region: string;
-  endpoint?: string;
-  expiresAt?: number;
+  endpoint: string;
 }
 
 /**
@@ -56,22 +53,23 @@ export async function getS3CredentialsFromAccessGrant(
 
   // Map StorX response to S3 credentials format
   // StorX API returns: access_key_id, secret_key (not secret_access_key!)
-  const credentials = {
-    accessKeyId: data.access_key_id || data.accessKeyId || data.accessKey,
-    secretAccessKey: data.secret_key || data.secret_access_key || data.secretAccessKey || data.secretKey,
-    sessionToken: data.session_token || data.sessionToken,
-    bucket: data.bucket || data.bucket_name || data.bucketName,
-    region: data.region || 'us-east-1',
-    endpoint: data.endpoint || data.gateway,
-    expiresAt: data.expires_at 
-      ? new Date(data.expires_at).getTime() 
-      : undefined,
+  const accessKeyId = data.access_key_id || data.accessKeyId || data.accessKey;
+  const secretAccessKey = data.secret_key || data.secret_access_key || data.secretAccessKey || data.secretKey;
+  const endpoint = data.endpoint || data.gateway;
+
+  if (!accessKeyId || !secretAccessKey || !endpoint) {
+    throw new Error('Missing required S3 credentials from StorX API response');
+  }
+
+  const credentials: S3Credentials = {
+    accessKeyId,
+    secretAccessKey,
+    endpoint,
   };
 
   console.log('Mapped credentials:', {
     hasAccessKey: !!credentials.accessKeyId,
     hasSecret: !!credentials.secretAccessKey,
-    hasBucket: !!credentials.bucket,
     endpoint: credentials.endpoint,
   });
 
@@ -83,7 +81,10 @@ export async function getS3CredentialsFromAccessGrant(
  * Uses AWS S3 SDK-compatible API to list objects in bucket
  * Calls server-side API route that handles S3 operations
  */
-export async function listFilesS3(credentials: S3Credentials): Promise<StorXFile[]> {
+export async function listFilesS3(credentials: S3Credentials): Promise<{
+  files: StorXFile[];
+  buckets: string[];
+}> {
   const response = await fetch('/api/storx/s3/list', {
     method: 'POST',
     headers: {
@@ -98,6 +99,9 @@ export async function listFilesS3(credentials: S3Credentials): Promise<StorXFile
   }
 
   const data = await response.json();
-  return data.files || [];
+  return {
+    files: data.files || [],
+    buckets: data.buckets || [],
+  };
 }
 

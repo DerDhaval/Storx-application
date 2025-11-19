@@ -20,11 +20,11 @@ export default function UndoToast({
 
   return (
     <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
-      <div className="bg-white rounded-lg shadow-xl border border-gray-200 p-4 max-w-sm">
+      <div className="bg-white rounded-lg shadow-xl border-2 border-storx-red/20 p-4 max-w-sm">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0">
             <svg
-              className="w-5 h-5 text-green-500"
+              className="w-5 h-5 text-storx-red"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

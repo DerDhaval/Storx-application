@@ -6,11 +6,7 @@
 export interface S3Credentials {
   accessKeyId: string;
   secretAccessKey: string;
-  sessionToken?: string;
-  bucket?: string; // Optional - might not be in StorX response
-  region: string;
-  endpoint?: string;
-  expiresAt?: number;
+  endpoint: string;
 }
 
 const STORAGE_KEY = 'storx_s3_credentials';
@@ -39,13 +35,6 @@ export function getS3Credentials(): S3Credentials | null {
     if (!stored) return null;
 
     const credentials: S3Credentials = JSON.parse(stored);
-
-    // Check expiration
-    if (credentials.expiresAt && Date.now() > credentials.expiresAt) {
-      clearS3Credentials();
-      return null;
-    }
-
     return credentials;
   } catch (error) {
     console.error('Error reading S3 credentials:', error);

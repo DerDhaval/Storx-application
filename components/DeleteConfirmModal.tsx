@@ -9,6 +9,7 @@ interface DeleteConfirmModalProps {
   onConfirm: () => void;
   onCancel: () => void;
   isDeleting?: boolean;
+  itemType?: 'file' | 'bucket';
 }
 
 export default function DeleteConfirmModal({
@@ -17,6 +18,7 @@ export default function DeleteConfirmModal({
   onConfirm,
   onCancel,
   isDeleting = false,
+  itemType = 'file',
 }: DeleteConfirmModalProps) {
   const [confirmText, setConfirmText] = useState('');
 
@@ -43,9 +45,9 @@ export default function DeleteConfirmModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
         <div className="flex items-center gap-4 mb-4">
-          <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+          <div className="flex-shrink-0 w-12 h-12 bg-storx-red-lighter rounded-full flex items-center justify-center">
             <svg
-              className="w-6 h-6 text-red-600"
+              className="w-6 h-6 text-storx-red"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -60,7 +62,7 @@ export default function DeleteConfirmModal({
           </div>
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900">
-              Delete File?
+              Delete {itemType === 'bucket' ? 'Bucket' : 'File'}?
             </h3>
             <p className="text-sm text-gray-500 mt-1">
               This action cannot be undone.
@@ -70,17 +72,22 @@ export default function DeleteConfirmModal({
 
         <div className="mb-6">
           <p className="text-gray-700 mb-2">
-            Are you sure you want to delete:
+            Are you sure you want to delete {itemType === 'bucket' ? 'the bucket' : ''}:
           </p>
           <p className="font-semibold text-gray-900 bg-gray-50 p-3 rounded border border-gray-200 break-all">
             {fileName}
           </p>
+          {itemType === 'bucket' && (
+            <p className="text-sm text-red-600 mt-2">
+              ⚠️ All files in this bucket will be permanently deleted.
+            </p>
+          )}
         </div>
 
         {requiresTyping && (
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Type <span className="font-mono text-red-600">delete</span> to
+              Type <span className="font-mono text-storx-red">delete</span> to
               confirm:
             </label>
             <input
@@ -88,7 +95,7 @@ export default function DeleteConfirmModal({
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
               placeholder="Type 'delete' here"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-storx-red focus:border-storx-red outline-none"
               disabled={isDeleting}
               autoFocus
               onKeyDown={(e) => {
@@ -116,7 +123,7 @@ export default function DeleteConfirmModal({
             isLoading={isDeleting}
             disabled={!isConfirmEnabled || isDeleting}
           >
-            {isDeleting ? 'Deleting...' : 'Delete File'}
+            {isDeleting ? 'Deleting...' : `Delete ${itemType === 'bucket' ? 'Bucket' : 'File'}`}
           </Button>
         </div>
       </div>
